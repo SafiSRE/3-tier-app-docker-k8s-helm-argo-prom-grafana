@@ -3,12 +3,12 @@ kind: StatefulSet
 metadata:
   name: {{ include "app.fullname" . }}-mongodb
   labels:
-    {{- include "app.labels" . | nindent 4 }}
+{{- include "app.labels" . | nindent 4 }}
     app.kubernetes.io/component: database
 spec:
   selector:
     matchLabels:
-      {{- include "app.selectorLabels" . | nindent 6 }}
+{{- include "app.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/component: database
   serviceName: "{{ include "app.fullname" . }}-mongodb"
   replicas: {{ .Values.mongodb.replicaCount }}
@@ -22,7 +22,7 @@ spec:
         prometheus.io/port: "9216"
       # --- PROMETHEUS ANNOTATIONS END ---
       labels:
-        {{- include "app.selectorLabels" . | nindent 8 }}
+{{- include "app.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: database
     spec:
       containers:
@@ -38,33 +38,32 @@ spec:
               mountPath: /data/db
           env:
             - name: MONGO_INITDB_ROOT_USERNAME
-              value: {{ .Values.mongodb.username }}
+              value: "{{ .Values.mongodb.username }}"
             - name: MONGO_INITDB_ROOT_PASSWORD
-              value: {{ .Values.mongodb.password }}
+              value: "{{ .Values.mongodb.password }}"
 
         # 2. SIDECAR CONTAINER: MongoDB Exporter for Prometheus
-        # The exporter runs alongside the database, accessing it via localhost.
         - name: mongodb-exporter
-          image: percona/mongodb_exporter:0.41
+          image: "percona/mongodb_exporter:0.41"
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 9216
               name: metrics
           env:
-            # The exporter connects to the MongoDB container running in the same pod (localhost)
             - name: MONGODB_URI
               value: "mongodb://{{ .Values.mongodb.username }}:{{ .Values.mongodb.password }}@localhost:27017/admin"
             - name: MONGODB_WEB_LISTEN_ADDRESS
               value: "0.0.0.0:9216"
+
   volumeClaimTemplates:
     - metadata:
         name: mongodb-data
       spec:
-        accessModes: [ "ReadWriteOnce" ]
+        accessModes:
+          - ReadWriteOnce
         resources:
           requests:
             storage: {{ .Values.mongodb.persistence.size }}
         {{- if .Values.mongodb.persistence.storageClassName }}
         storageClassName: {{ .Values.mongodb.persistence.storageClassName }}
         {{- end }}
-```eof
