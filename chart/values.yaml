@@ -1,0 +1,41 @@
+# Global settings for labels and naming
+appName: my-3-tier-app
+fullnameOverride: ""
+
+# --- Frontend Configuration ---
+frontend:
+  replicaCount: 2
+  image:
+    repository: your-dockerhub-user/frontend-image # <<-- CHANGE THIS
+    tag: latest
+    pullPolicy: IfNotPresent
+  port: 80 # Container port (e.g., NGINX port)
+  service:
+    type: LoadBalancer # Options: ClusterIP, NodePort, LoadBalancer
+    port: 80 # External service port
+
+# --- Backend Configuration (API) ---
+backend:
+  replicaCount: 2
+  image:
+    repository: your-dockerhub-user/backend-image # <<-- CHANGE THIS
+    tag: latest
+    pullPolicy: IfNotPresent
+  port: 3000 # Your application's internal API port
+  # Note: Metrics path is defined in deployment.yaml
+
+# --- MongoDB Configuration (Database) ---
+mongodb:
+  replicaCount: 1
+  image:
+    repository: mongo
+    tag: 4.4 # Using a stable, older version for wide compatibility
+    pullPolicy: IfNotPresent
+  port: 27017
+  databaseName: mydatabase
+  username: admin
+  password: supersecretpassword # <<-- CHANGE THIS (Use a K8s Secret in production!)
+  persistence:
+    size: 5Gi
+    enabled: true
+    storageClassName: "" # Use default StorageClass if left empty

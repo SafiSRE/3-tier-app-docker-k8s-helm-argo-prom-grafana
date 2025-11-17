@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "app.fullname" . }}-backend
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backend
+spec:
+  replicas: {{ .Values.backend.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "app.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: backend
+  template:
+    metadata:
+      # --- PROMETHEUS ANNOTATIONS START ---
+      annotations:
+        # 1. Enable scraping for this pod
+        prometheus.io/scrape: "true"
+        # 2. Define the path where metrics are exposed
+        prometheus.io/path: "/metrics"
+        # 3. Define the port to scrape (must match container port)
+        prometheus.io/port: "{{ .Values.backend.port }}"
+      # --- PROMETHEUS ANNOTATIONS END ---
+      labels:
+        {{- include "app.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: backend
+    spec:
+      containers:
+        - name: backend
+          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+          imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.backend.port }}
+              protocol: TCP
+          env:
+            # IMPORTANT: MONGODB_URI uses the K8s Service Name (mongodb-service)
+            - name: MONGODB_URI
+              value: "mongodb://{{ include "app.fullname" . }}-mongodb:27017/{{ .Values.mongodb.databaseName }}"
+            # Add other required environment variables for your application here

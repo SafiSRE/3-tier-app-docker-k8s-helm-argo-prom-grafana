@@ -1,0 +1,12 @@
+apiVersion: v2
+name: three-tier-app
+description: A Helm chart for deploying a 3-tier microservice application (Frontend, Backend, MongoDB) on Kubernetes.
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+keywords:
+  - microservices
+  - kubernetes
+  - helm
+  - gitops
+  - argocd

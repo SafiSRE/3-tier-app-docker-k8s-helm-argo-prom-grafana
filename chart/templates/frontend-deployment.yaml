@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "app.fullname" . }}-frontend
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
+spec:
+  replicas: {{ .Values.frontend.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "app.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: frontend
+  template:
+    metadata:
+      # --- PROMETHEUS ANNOTATIONS START ---
+        annotations:
+          # 1. Enable scraping for this pod
+          prometheus.io/scrape: "true"
+          # 2. Define the path where metrics are exposed
+          prometheus.io/path: "/metrics"
+          # 3. Define the port to scrape (must match container port)
+          prometheus.io/port: "{{ .Values.frontend.port }}"
+      # --- PROMETHEUS ANNOTATIONS END ---
+      labels:
+        {{- include "app.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}"
+          imagePullPolicy: {{ .Values.frontend.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.frontend.port }}
+              protocol: TCP
+          env:
+            # This environment variable points the frontend to the internal backend service.
+            # The URL uses the K8s Service Name and ClusterIP port.
+            - name: BACKEND_SERVICE_URL
+              value: "http://{{ include "app.fullname" . }}-backend"
+            - name: BACKEND_SERVICE_PORT
+              value: "80"

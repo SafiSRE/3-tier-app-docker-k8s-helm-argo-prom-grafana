@@ -1,0 +1,42 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: prometheus-grafana-monitoring
+  namespace: argocd # Assuming ArgoCD is installed here
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    # Official Helm Repository for Prometheus Community
+    repoURL: https://prometheus-community.github.io/helm-charts
+    targetRevision: 58.0.0 # Use a stable version, check community for latest compatible
+    chart: kube-prometheus-stack
+    helm:
+      # Optional: Override default values for the monitoring stack here
+      valuesObject:
+        grafana:
+          ingress:
+            enabled: false # Keep it internal for now, exposed via port-forward
+          service:
+            type: ClusterIP # Use ClusterIP for internal access
+            # We can change this to LoadBalancer if you need external access immediately
+        prometheus:
+          prometheusSpec:
+            # Persistent storage for Prometheus time-series data
+            storageSpec:
+              volumeClaimTemplate:
+                spec:
+                  accessModes: [ "ReadWriteOnce" ]
+                  resources:
+                    requests:
+                      storage: 10Gi # 10GB for Prometheus DB
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring # We'll deploy the stack into a dedicated namespace
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true # ArgoCD will create the 'monitoring' namespace
