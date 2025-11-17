@@ -7,7 +7,7 @@ frontend:
   replicaCount: 2
   image:
     repository: choudhurysafi/3-tier-web-demo-frontend # <<-- CHANGE THIS
-    tag: latest
+    tag: v1.1
     pullPolicy: IfNotPresent
   port: 80 # Container port (e.g., NGINX port)
   service:
