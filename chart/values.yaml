@@ -6,7 +6,7 @@ fullnameOverride: ""
 frontend:
   replicaCount: 2
   image:
-    repository: your-dockerhub-user/frontend-image # <<-- CHANGE THIS
+    repository: choudhurysafi/3-tier-web-demo-frontend # <<-- CHANGE THIS
     tag: latest
     pullPolicy: IfNotPresent
   port: 80 # Container port (e.g., NGINX port)
@@ -18,13 +18,13 @@ frontend:
 backend:
   replicaCount: 2
   image:
-    repository: your-dockerhub-user/backend-image # <<-- CHANGE THIS
+    repository: choudhurysafi/3-tier-web-demo-backend # <<-- CHANGE THIS
     tag: latest
     pullPolicy: IfNotPresent
   port: 3000 # Your application's internal API port
   # Note: Metrics path is defined in deployment.yaml
 
-# --- MongoDB Configuration (Database) ---
+  # --- MongoDB Configuration (Database) ---
 mongodb:
   replicaCount: 1
   image:
@@ -32,9 +32,9 @@ mongodb:
     tag: 4.4 # Using a stable, older version for wide compatibility
     pullPolicy: IfNotPresent
   port: 27017
-  databaseName: mydatabase
+  databaseName: vista
   username: admin
-  password: supersecretpassword # <<-- CHANGE THIS (Use a K8s Secret in production!)
+  password: 8500123260 # <<-- CHANGE THIS (Use a K8s Secret in production!)
   persistence:
     size: 5Gi
     enabled: true
