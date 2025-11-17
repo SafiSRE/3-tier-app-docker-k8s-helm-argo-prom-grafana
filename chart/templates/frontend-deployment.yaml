@@ -14,13 +14,13 @@ spec:
   template:
     metadata:
       # --- PROMETHEUS ANNOTATIONS START ---
-        annotations:
-          # 1. Enable scraping for this pod
-          prometheus.io/scrape: "true"
-          # 2. Define the path where metrics are exposed
-          prometheus.io/path: "/metrics"
-          # 3. Define the port to scrape (must match container port)
-          prometheus.io/port: "{{ .Values.frontend.port }}"
+      annotations: # <--- CORRECTED: Moved two spaces to the left
+        # 1. Enable scraping for this pod
+        prometheus.io/scrape: "true"
+        # 2. Define the path where metrics are exposed
+        prometheus.io/path: "/metrics"
+        # 3. Define the port to scrape (must match container port)
+        prometheus.io/port: "{{ .Values.frontend.port }}"
       # --- PROMETHEUS ANNOTATIONS END ---
       labels:
         {{- include "app.selectorLabels" . | nindent 8 }}
