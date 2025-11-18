@@ -2,41 +2,49 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: prometheus-grafana-monitoring
-  namespace: argocd # Assuming ArgoCD is installed here
+  namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   source:
-    # Official Helm Repository for Prometheus Community
     repoURL: https://prometheus-community.github.io/helm-charts
-    targetRevision: 58.0.0 # Use a stable version, check community for latest compatible
+    targetRevision: 58.0.0
     chart: kube-prometheus-stack
     helm:
-      # Optional: Override default values for the monitoring stack here
+      # Sets a consistent release name for Helm deployment
+      releaseName: prometheus-grafana-monitor 
       valuesObject:
         grafana:
-          ingress:
-            enabled: false # Keep it internal for now, exposed via port-forward
           service:
-            type: ClusterIP # Use ClusterIP for internal access
-            # We can change this to LoadBalancer if you need external access immediately
+            type: ClusterIP
         prometheus:
           prometheusSpec:
-            # Persistent storage for Prometheus time-series data
             storageSpec:
               volumeClaimTemplate:
                 spec:
                   accessModes: [ "ReadWriteOnce" ]
                   resources:
                     requests:
-                      storage: 10Gi # 10GB for Prometheus DB
+                      storage: 10Gi
   destination:
     server: https://kubernetes.default.svc
-    namespace: monitoring # We'll deploy the stack into a dedicated namespace
+    namespace: monitoring
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
-      - CreateNamespace=true # ArgoCD will create the 'monitoring' namespace
+      # CRITICAL FIX 1: Ensures CRDs are handled correctly and mitigates 
+      # the "metadata.annotations: Too long" error by using server-side apply.
+      - CreateNamespace=true
+      - ServerSideApply=true
+      
+      # CRITICAL FIX 2: Prevents issues with creating resources before the CRDs are ready.
+      - ApplyOutOfSyncOnly=true
+      
+      # Recommended: Ensures cluster-wide CRDs aren't deleted if this ArgoCD app is removed.
+      - PreserveResourcesOnDeletion=true
+```eof
+
+**Action:** Replace the content of your `argocd/monitoring-app.yaml` file in your Git repository with the YAML above, commit, and push the changes. ArgoCD will then perform a new sync with these corrected options.
