@@ -4,7 +4,7 @@ fullnameOverride: ""
 
 # --- Frontend Configuration ---
 frontend:
-  replicaCount: 2
+  replicaCount: 4
   image:
     repository: choudhurysafi/3-tier-web-demo-frontend # <<-- CHANGE THIS
     tag: v1.1
@@ -16,7 +16,7 @@ frontend:
 
 # --- Backend Configuration (API) ---
 backend:
-  replicaCount: 2
+  replicaCount: 4
   image:
     repository: choudhurysafi/3-tier-web-demo-backend # <<-- CHANGE THIS
     tag: latest
